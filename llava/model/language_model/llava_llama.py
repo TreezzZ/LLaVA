@@ -69,7 +69,6 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         image_sizes: Optional[List[List[int]]] = None,
         return_dict: Optional[bool] = None,
     ) -> Union[Tuple, CausalLMOutputWithPast]:
-
         if inputs_embeds is None:
             (
                 input_ids,
@@ -77,7 +76,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
                 attention_mask,
                 past_key_values,
                 inputs_embeds,
-                labels
+                labels,
             ) = self.prepare_inputs_labels_for_multimodal(
                 input_ids,
                 position_ids,
@@ -121,7 +120,8 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
                 attention_mask,
                 _,
                 inputs_embeds,
-                _
+                _,
+                clip_image_features
             ) = self.prepare_inputs_labels_for_multimodal(
                 inputs,
                 position_ids,
@@ -134,12 +134,13 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         else:
             inputs_embeds = self.get_model().embed_tokens(inputs)
 
-        return super().generate(
+        outputs = super().generate(
             position_ids=position_ids,
             attention_mask=attention_mask,
             inputs_embeds=inputs_embeds,
             **kwargs
         )
+        return outputs, clip_image_features
 
     def prepare_inputs_for_generation(self, input_ids, past_key_values=None,
                                       inputs_embeds=None, **kwargs):
